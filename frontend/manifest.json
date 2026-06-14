@@ -3,7 +3,7 @@
   "short_name": "AI Planner",
   "id":"/ai-study-planner",
   "description": "An interactive study planner powered by Gemini AI with active metric tracking.",
-  "start_url": "/index1.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "display_override": [
     "window-controls-overlay",
@@ -43,7 +43,7 @@
   "protocol_handlers": [
     {
       "protocol": "web+planner",
-      "url": "/index1.html?action=%s"
+      "url": "/index.html?action=%s"
     }
   ]
 }

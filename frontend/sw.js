@@ -1,11 +1,11 @@
-const CACHE_NAME = 'ai-study-planner-v1';
+const CACHE_NAME = 'ai-study-planner-v2';
 
 // Add all your static local frontend files here so they cache safely
 const ASSETS_TO_CACHE = [
   '/',
   '/planner.html',
   '/dashboard.html',
-  '/index1.html'
+  '/index.html'
 ];
 
 // 1. Install Event: Caches all static asset routes
