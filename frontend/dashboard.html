@@ -735,7 +735,7 @@
         }
 
         function loadSavedPlansList() {
-            fetch("http://localhost:5000/planner")
+            fetch("https://ai-study-planner-1-2jr9.onrender.com/planner")
             .then(res => res.json())
             .then(data => {
                 const plansList = document.getElementById("plansList");
