@@ -413,6 +413,7 @@ form.addEventListener("submit", function(e) {
     responseMsg.innerText = "Creating your plan with Gemini AI...";
 
 fetch("https://ai-study-planner-1-2jr9.onrender.com/planner", {
+        method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
