@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Planner</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px 32px;
+            color: #111;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #4facfe;
+            color: white;
+            padding: 16px 24px;
+            font-size: 20px;
+            font-weight: bold;
+            width: 100%;
+            max-width: 1100px;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            margin-bottom: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 12px;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            color: #02366d;
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            max-width: 1100px;
+            width: 100%;
+            align-items: flex-start;
+            padding-bottom: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            animation: fadeIn 0.6s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .result-container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 640px;
+            flex-grow: 1;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            animation: fadeIn 0.8s ease-in-out;
+            display: none;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.12);
+        }
+
+        textarea {
+            resize: vertical;
+            height: 90px;
+            font-family: inherit;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .checkbox-container input {
+            width: auto;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: #4facfe;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #007bff;
+            transform: translateY(-1px);
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 4px;
+            min-height: 16px;
+        }
+
+        #responseMsg {
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: #444;
+        }
+
+        .saved-plans-section {
+            margin-top: 28px;
+            border-top: 1px solid #eee;
+            padding-top: 18px;
+        }
+
+        .btn-dashboard-redirect {
+            display: inline-block;
+            background: linear-gradient(135deg, #4facfe 0%, #007bff 100%);
+            color: white;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-dashboard-redirect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                text-align: left;
+                padding: 16px 18px;
+            }
+            .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 12px;
+            }
+            .navbar a {
+                padding: 10px 12px;
+                font-size: 16px;
+            }
+            .main-wrapper {
+                flex-direction: column;
+                align-items: center;
+                padding-bottom: 16px;
+            }
+            .container, .result-container {
+                max-width: 100%;
+                padding: 24px;
+            }
+            .btn-dashboard-redirect {
+                width: 100%;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* --- Window Controls Overlay Titlebar Configurations --- */
+@media (display-mode: window-control-overlay), (display-mode: standalone) {
+    #appHeader {
+        /* Pushes web content down slightly so it doesn't clip underneath the OS close button area */
+        padding-top: env(titlebar-area-y, 0px);
+        height: calc(env(titlebar-area-height, 50px) + 10px);
+        
+        /* Leaves a safe padding on the right side so the OS window buttons don't overlap your menu links */
+        padding-right: calc(100vw - env(titlebar-area-width, 100vw) + 15px);
+        
+        display: flex;
+        align-items: center;
+        
+        /* This magic property lets users click and drag your app window around using the empty space of your navbar */
+        -webkit-app-region: drag;
+    }
+
+    /* CRITICAL: This ensures your navigation buttons and logo remain clickable. 
+       Without 'no-drag', the OS treats them as draggable window space and clicks won't fire! */
+    #appHeader .logo,
+    #appHeader .nav-links a,
+    #appHeader button {
+        -webkit-app-region: no-drag;
+        cursor: pointer;
+    }
+}
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="appHeader">
+        <h1 class="logo">📘 AI Study Planner</h1>
+        <div class="nav-links">
+            <a href="index1.html">Home</a>
+            <a href="planner.html">Planner</a>
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+            <h2>📘 Study Planner</h2>
+
+            <form id="studyForm" method="POST">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="subject" placeholder="Enter subject">
+                    <div class="error" id="subjectError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Topics to Focus On (Optional)</label>
+                    <textarea id="topics" placeholder="e.g. Integration, Matrices, Probability"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Study Hours (per day)</label>
+                    <input type="number" id="hours" placeholder="e.g. 3">
+                    <div class="error" id="hoursError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Exam Date</label>
+                    <input type="date" id="examDate">
+                    <div class="error" id="dateError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Difficulty Level</label>
+                    <select id="difficulty">
+                        <option value="">Select</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                    <div class="error" id="difficultyError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Study Style Preference</label>
+                    <select id="studyStyle">
+                        <option value="Visual learning (suggest video concepts, maps, and diagrams)">Visual Learner</option>
+                        <option value="Active Recall (focus heavily on active retrieval, quizzes, and flashcards)">Active Recall</option>
+                        <option value="Textbook Reading (focus on comprehensive reference chapters and core notes)">Textbook / Traditional</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="bufferDays">
+                        Leave Sundays free for review/rest
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn">Generate Plan</button>
+            </form>
+
+            <hr style="margin: 20px 0; border-color: #e5e7eb;">
+            <button type="button" class="btn-dashboard-redirect" onclick="window.location.href='dashboard.html'">
+               📊 View My Live Dashboard
+            </button>
+            <hr style="margin-top:20px; border-color: #e5e7eb;">
+            <div class="saved-plans-section">
+                <h3>📂 Saved Plans</h3>
+                <div id="plansList">Loading history entries...</div>
+            </div>
+        </div>
+
+        <div class="result-container" id="resultBox">
+            <h2>🗓 Your AI Study Plan</h2>
+            <div id="responseMsg"></div>
+        </div>
+    </div>
+
+<script>
+const form = document.getElementById("studyForm");
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let subject = document.getElementById("subject").value.trim();
+    let hours = document.getElementById("hours").value;
+    let examDate = document.getElementById("examDate").value;
+    let difficulty = document.getElementById("difficulty").value;
+    let topics = document.getElementById("topics").value.trim();
+    let studyStyle = document.getElementById("studyStyle").value;
+    let bufferDays = document.getElementById("bufferDays").checked;
+    let submitBtn = document.getElementById("submitBtn");
+    let isValid = true;
+
+    document.querySelectorAll(".error").forEach(el => el.innerText = "");
+
+    if(subject === "") {
+        document.getElementById("subjectError").innerText = "Subject required";
+        isValid = false;
+    }
+
+    if(hours === "" || hours <= 0) {
+        document.getElementById("hoursError").innerText = "Enter valid hours";
+        isValid = false;
+    }
+
+    if(examDate === "") {
+        document.getElementById("dateError").innerText = "Select exam date";
+        isValid = false;
+    }
+
+    if(difficulty === "") {
+        document.getElementById("difficultyError").innerText = "Select difficulty";
+        isValid = false;
+    }
+
+    if(!isValid) return;
+
+    let data = { subject, hours, examDate, difficulty, topics, studyStyle, bufferDays };
+
+    submitBtn.innerText = "Generating plan...";
+    submitBtn.disabled = true;
+    const resultBox = document.getElementById("resultBox");
+    const responseMsg = document.getElementById("responseMsg");
+    resultBox.style.display = "block";
+    responseMsg.innerText = "Creating your plan with Gemini AI...";
+
+    fetch("http://localhost:5000/planner", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+        submitBtn.innerText = "Generate Plan";
+        submitBtn.disabled = false;
+
+        if(response.success) {
+            let formattedPlan = response.message
+                .replace(/\*\*(Day .*?)\*\*/g, "<h3>$1</h3>")
+                .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+                .replace(/\n/g, "<br>");
+
+            responseMsg.innerHTML = formattedPlan;
+            localStorage.setItem("latestPlan", formattedPlan);
+            localStorage.setItem("latestPlanHours", hours);
+            localStorage.setItem("customTopics", topics);
+            localStorage.setItem("preferredStyle", studyStyle);
+            localStorage.setItem("usesBufferDays", bufferDays);
+            localStorage.setItem("latestPlanSubject", subject);
+            sessionStorage.setItem("activePlan", formattedPlan);
+            sessionStorage.setItem("activeHours", hours);
+            sessionStorage.setItem("activeTopics", topics);
+            sessionStorage.setItem("activeStyle", studyStyle);
+            sessionStorage.setItem("activeBuffer", bufferDays);
+            sessionStorage.setItem("activeSubject", subject);
+            sessionStorage.setItem("activeExamDate", examDate);
+            sessionStorage.setItem("activeDifficulty", difficulty);
+
+            if (typeof updateProgress === "function") {
+                updateProgress();
+            }
+            loadPlans();
+        } else {
+            responseMsg.innerText = "Error: " + response.message;
+        }
+    })
+    .catch(err => {
+        submitBtn.innerText = "Generate Plan";
+        submitBtn.disabled = false;
+        responseMsg.innerText = "Failed to connect to the server.";
+        console.error(err);
+    });
+});
+
+function loadPlans() {
+    fetch("http://localhost:5000/planner")
+    .then(res => res.json())
+    .then(data => {
+        const plansList = document.getElementById("plansList");
+        plansList.innerHTML = "";
+
+        if(!data || data.length === 0) {
+            plansList.innerHTML = "<p style='font-size:12px; color:#888;'>No historical plans found.</p>";
+            return;
+        }
+
+        data.forEach(plan => {
+            const div = document.createElement("div");
+            div.style.padding = "8px 0";
+            div.innerHTML = `
+                <p style="font-size: 13px; color: #444;">
+                    <strong>Subject:</strong> ${plan.subject} |
+                    <strong>Hours:</strong> ${plan.hours}h |
+                    <strong>Level:</strong> ${plan.difficulty}
+                </p>
+                <hr style="border: 0; border-top: 1px dashed #eee; margin-top: 5px;">
+            `;
+            plansList.appendChild(div);
+        });
+    })
+    .catch(err => {
+        console.log("Could not load past plans:", err);
+        document.getElementById("plansList").innerHTML = "<p style='font-size:12px; color:#888;'>No historical plans found.</p>";
+    });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadPlans();
+
+    if (sessionStorage.getItem("activeSubject")) {
+        document.getElementById("subject").value = sessionStorage.getItem("activeSubject");
+        document.getElementById("hours").value = sessionStorage.getItem("activeHours");
+        document.getElementById("topics").value = sessionStorage.getItem("activeTopics");
+        document.getElementById("examDate").value = sessionStorage.getItem("activeExamDate");
+        document.getElementById("difficulty").value = sessionStorage.getItem("activeDifficulty");
+        document.getElementById("studyStyle").value = sessionStorage.getItem("activeStyle");
+        document.getElementById("bufferDays").checked = sessionStorage.getItem("activeBuffer") === "true";
+
+        const resultBox = document.getElementById("resultBox");
+        const responseMsg = document.getElementById("responseMsg");
+        resultBox.style.display = "block";
+        responseMsg.innerHTML = sessionStorage.getItem("activePlan");
+    }
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => console.log('Service Worker successfully registered!', reg.scope))
+        .catch((err) => console.error('Service Worker registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

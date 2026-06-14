@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Dashboard</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #4facfe;
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .navbar a {
+            padding: 10px 16px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            color: #02366d;
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* DASHBOARD LAYOUT */
+        .dashboard {
+            padding: 20px;
+        }
+
+        /* STAT METRIC CARDS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .custom-profile-card {
+            background: #fffbfa;
+            border: 1px solid #ffe3e0;
+            text-align: left !important;
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        .custom-metric-desc {
+            font-size: 12px !important;
+            font-weight: normal !important;
+            color: #555 !important;
+            margin-top: 4px !important;
+            line-height: 1.3;
+        }
+
+        /* MASTER PROGRESS COMPONENT */
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 14px;
+            background: #eef2f7;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 20px;
+            transition: width 0.4s ease;
+        }
+
+        /* MAIN SPLIT WORKSPACE */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: 650px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .subject-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            flex-shrink: 0;
+        }
+
+        .section-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        #accordionWrapper {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .day-accordion {
+            border: 1px solid #eef2f7;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .day-header:hover {
+            background: #f1f3f5;
+        }
+
+        .day-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .round-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #b4becb;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+            background: white;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .round-checkbox:checked {
+            background: #4facfe;
+            border-color: #4facfe;
+        }
+
+        .round-checkbox:checked::after {
+            content: "✔";
+            color: white;
+            font-size: 13px;
+            position: absolute;
+            top: 1px;
+            left: 4px;
+        }
+
+        .day-master-cb:checked {
+            background: #a855f7;
+            border-color: #a855f7;
+        }
+
+        .day-tasks-container {
+            padding: 5px 15px 15px 15px;
+            display: none; 
+            border-top: 1px solid #eef2f7;
+            background: #fff;
+        }
+
+        .sub-task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f1f3f5;
+        }
+
+        .sub-task-item:last-child {
+            border-bottom: none;
+        }
+
+        .sub-task-text {
+            font-size: 14px;
+            color: #555;
+            margin-left: 12px;
+        }
+
+        .plan-text-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .plan-text-container p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        .saved {
+            margin-top: 20px;
+            height: auto;
+        }
+
+        iframe{
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+        }
+        
+        #audioSummaryBtn{
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard {
+                padding: 16px;
+            }
+            .navbar {
+                padding: 16px 20px;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                padding: 16px 18px;
+            }
+            .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 12px;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            .main {
+                grid-template-columns: 1fr;
+            }
+            .box {
+                height: auto;
+                max-height: none;
+            }
+            .progress-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .progress-container,
+            .card,
+            .box {
+                padding: 20px;
+            }
+            iframe {
+                position: static;
+                width: 100%;
+                max-width: 400px;
+                margin: 20px auto 0;
+                display: block;
+            }
+            #audioSummaryBtn {
+                bottom: 16px;
+                right: 16px;
+                width: 52px;
+                height: 52px;
+            }
+        }
+
+        /* --- Window Controls Overlay Titlebar Configurations --- */
+@media (display-mode: window-control-overlay), (display-mode: standalone) {
+    #appHeader {
+        /* Pushes web content down slightly so it doesn't clip underneath the OS close button area */
+        padding-top: env(titlebar-area-y, 0px);
+        height: calc(env(titlebar-area-height, 50px) + 10px);
+        
+        /* Leaves a safe padding on the right side so the OS window buttons don't overlap your menu links */
+        padding-right: calc(100vw - env(titlebar-area-width, 100vw) + 15px);
+        
+        display: flex;
+        align-items: center;
+        
+        /* This magic property lets users click and drag your app window around using the empty space of your navbar */
+        -webkit-app-region: drag;
+    }
+
+    /* CRITICAL: This ensures your navigation buttons and logo remain clickable. 
+       Without 'no-drag', the OS treats them as draggable window space and clicks won't fire! */
+    #appHeader .logo,
+    #appHeader .nav-links a,
+    #appHeader button {
+        -webkit-app-region: no-drag;
+        cursor: pointer;
+    }
+}
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar" id="appHeader">
+        <h1 class="logo">📘 AI Study Dashboard</h1>
+        <div class="nav-links">
+            <a href="index1.html">Home</a>
+            <a href="planner.html">Planner</a>
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+
+        <div class="stats">
+            <div class="card">
+                <h3>Study Hours / Day</h3>
+                <p id="hoursPerDayStat">0h</p>
+            </div>
+            <div class="card">
+                <h3>Total Hours Studied</h3>
+                <p id="totalHoursStudied">0h</p>
+            </div>
+            <div class="card">
+                <h3>Total Tasks Completed</h3>
+                <p id="tasksDone">0</p>
+            </div>
+            <div class="card">
+                <h3>Total Pending Tasks</h3>
+                <p id="tasksPending">0</p>
+            </div>
+
+            <div class="card custom-profile-card">
+                <h3>⚙️ AI Plan Strategy</h3>
+                <div class="custom-metric-desc" style="margin-top:8px !important;">
+                    <strong>Style:</strong> <span id="prefStyleLabel">Default</span>
+                </div>
+                <div class="custom-metric-desc">
+                    <strong>Topics:</strong> <span id="prefTopicsLabel">All Chapters</span>
+                </div>
+                <div class="custom-metric-desc">
+                    <strong>Sundays Off:</strong> <span id="prefBufferLabel">No</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-header">
+                <span>Overall Course Completion</span>
+                <span id="progressPercentText">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-bar" id="mainProgressBar"></div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="box">
+                <div class="subject-title" id="displaySubjectName">General Overview</div>
+                <div class="section-label">Course Tasks</div>
+                <div id="accordionWrapper"></div>
+            </div>
+
+            <div class="box">
+                <h3>🗓 Full Schedule Reference</h3>
+                <div id="planDisplay" class="plan-text-container">No schedule active.</div>
+            </div>
+        </div>
+        <button id="audioSummaryBtn">🔊</button>
+
+        <div class="music-player-content">
+            <iframe src="https://open.spotify.com/embed/album/51tvE7oyx2yEqlFMhvM5tq?utm_source=generator" 
+                    width="300" 
+                    height="90" 
+                    frameBorder="0" 
+                    allowfullscreen="" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy"
+                    style="border-radius: 8px;">
+            </iframe>
+        </div>
+
+<script>
+        let structuredPlanMap = {}; 
+        let hoursAllocatedPerDay = 0;
+        let absoluteGlobalTasks = 0;
+
+        function updateGlobalStats() {
+            const checkedSubCheckboxes = document.querySelectorAll(".sub-task-cb:checked");
+
+            let completedCount = checkedSubCheckboxes.length;
+            let pendingCount = absoluteGlobalTasks - completedCount;
+
+            document.getElementById("tasksDone").innerText = completedCount;
+            document.getElementById("tasksPending").innerText = pendingCount;
+
+            let calculationHours = 0;
+            Object.keys(structuredPlanMap).forEach(dayKey => {
+                let dayTasks = structuredPlanMap[dayKey];
+                let totalDayTasksCount = dayTasks.length;
+                if (totalDayTasksCount > 0) {
+                    let completedInDay = document.querySelectorAll(`.sub-task-cb[data-day="${dayKey}"]:checked`).length;
+                    calculationHours += (completedInDay / totalDayTasksCount) * hoursAllocatedPerDay;
+                }
+            });
+
+            document.getElementById("totalHoursStudied").innerText = calculationHours.toFixed(1) + "h";
+
+            const percent = absoluteGlobalTasks === 0 ? 0 : Math.round((completedCount / absoluteGlobalTasks) * 100);
+            document.getElementById("progressPercentText").innerText = percent + "%";
+            document.getElementById("mainProgressBar").style.width = percent + "%";
+        }
+
+        function parseScheduleToMemory(rawHtml) {
+            let tempDiv = document.createElement("div");
+            tempDiv.innerHTML = rawHtml;
+            
+            let lines = tempDiv.innerHTML.split(/<br\s*\/?>|\n/gi);
+
+            let currentDayKey = "Day 1";
+            structuredPlanMap = {};
+            absoluteGlobalTasks = 0;
+
+            structuredPlanMap[currentDayKey] = [];
+
+            lines.forEach(line => {
+                let linkMatch = line.match(/\[Link:\s*(https?:\/\/[^\]]+)\]/i);
+                let embeddedLink = linkMatch ? linkMatch[1] : null;
+
+                let processingLine = line.replace(/\[Link:\s*https?:\/\/[^\]]+\]/i, "");
+
+                let cleanLine = processingLine.replace(/<\/?[^>]+(>|$)/g, "").replace(/\*\*/g, "").trim();
+                cleanLine = cleanLine.replace(/^[-*•#]\s*/, "").trim();
+                
+                if (!cleanLine || cleanLine === "---" || cleanLine.toLowerCase().startsWith("time blocks")) return;
+
+                if (cleanLine.toLowerCase().includes("day ") || /^day\s*\d+/i.test(cleanLine)) {
+                    let dayMatch = cleanLine.match(/day\s*\d+[^:]*/i);
+                    currentDayKey = dayMatch ? dayMatch[0] : cleanLine;
+                    structuredPlanMap[currentDayKey] = [];
+                    return;
+                }
+
+                if (!structuredPlanMap[currentDayKey]) {
+                    structuredPlanMap[currentDayKey] = [];
+                }
+
+                structuredPlanMap[currentDayKey].push({
+                    text: cleanLine,
+                    link: embeddedLink
+                });
+                absoluteGlobalTasks++;
+            });
+
+            Object.keys(structuredPlanMap).forEach(key => {
+                if (structuredPlanMap[key].length === 0 && key !== "Day 1") {
+                    delete structuredPlanMap[key];
+                }
+            });
+        }
+
+        function renderAccordionTracker() {
+            const container = document.getElementById("accordionWrapper");
+            container.innerHTML = "";
+
+            const dayKeys = Object.keys(structuredPlanMap);
+            
+            if (dayKeys.length === 0 || absoluteGlobalTasks === 0) {
+                container.innerHTML = "<p style='color:#888; font-size:14px; padding:10px;'>No distinct tasks parsed. Check Full Schedule Reference panel.</p>";
+                return;
+            }
+
+            dayKeys.forEach((dayKey, dayIdx) => {
+                let taskListArray = structuredPlanMap[dayKey];
+                if(taskListArray.length === 0) return;
+
+                let dayContainer = document.createElement("div");
+                dayContainer.className = "day-accordion";
+
+                let headerDiv = document.createElement("div");
+                headerDiv.className = "day-header";
+                headerDiv.setAttribute("data-target", `tasks_panel_${dayIdx}`);
+
+                headerDiv.innerHTML = `
+                    <div class="day-title-wrapper">
+                        <span>▶</span> <strong>${dayKey}</strong>
+                    </div>
+                    <input type="checkbox" class="round-checkbox day-master-cb" id="master_cb_${dayIdx}" disabled>
+                `;
+
+                let panelDiv = document.createElement("div");
+                panelDiv.className = "day-tasks-container";
+                panelDiv.id = `tasks_panel_${dayIdx}`;
+
+                taskListArray.forEach((taskObj, subIdx) => {
+                    let fullTaskDescription = taskObj.text;
+                    let colonIdx = fullTaskDescription.indexOf(":");
+                    let cleanTaskDisplay = colonIdx !== -1 ? fullTaskDescription.substring(colonIdx + 1).trim() : fullTaskDescription;
+
+                    let linkBadgeMarkup = "";
+                    if (taskObj.link) {
+                        linkBadgeMarkup = `
+                            <a href="${taskObj.link}" target="_blank" rel="noopener noreferrer" 
+                               style="margin-left: auto; background: #e0f2fe; color: #0369a1; text-decoration: none; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 6px; transition: background 0.2s;"
+                               onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
+                                🔗 Resource
+                            </a>`;
+                    }
+
+                    let subTaskRow = document.createElement("div");
+                    subTaskRow.className = "sub-task-item";
+                    subTaskRow.style.display = "flex";
+                    subTaskRow.style.alignItems = "center";
+                    subTaskRow.style.width = "100%";
+
+                    subTaskRow.innerHTML = `
+                        <input type="checkbox" class="round-checkbox sub-task-cb" data-day="${dayKey}" data-parentidx="${dayIdx}">
+                        <span class="sub-task-text" style="max-width: 70%; word-break: break-word;">${cleanTaskDisplay}</span>
+                        ${linkBadgeMarkup}
+                    `;
+                    panelDiv.appendChild(subTaskRow);
+                });
+
+                dayContainer.appendChild(headerDiv);
+                dayContainer.appendChild(panelDiv);
+                container.appendChild(dayContainer);
+
+                if(dayIdx === 0) {
+                    panelDiv.style.display = "block";
+                    headerDiv.querySelector(".day-title-wrapper span").innerText = "▼";
+                }
+
+                headerDiv.addEventListener("click", function(e) {
+                    if(e.target.classList.contains("day-master-cb")) return;
+
+                    let targetPanel = document.getElementById(this.getAttribute("data-target"));
+                    let arrowSpan = this.querySelector(".day-title-wrapper span");
+
+                    if(targetPanel.style.display === "block") {
+                        targetPanel.style.display = "none";
+                        arrowSpan.innerText = "▶";
+                    } else {
+                        targetPanel.style.display = "block";
+                        arrowSpan.innerText = "▼";
+                    }
+                });
+            });
+
+            document.querySelectorAll(".sub-task-cb").forEach(cb => {
+                cb.addEventListener("change", function() {
+                    let parentId = this.getAttribute("data-parentidx");
+                    let targetDayKey = this.getAttribute("data-day");
+                    
+                    let siblingsCount = document.querySelectorAll(`.sub-task-cb[data-day="${targetDayKey}"]`).length;
+                    let siblingCheckedCount = document.querySelectorAll(`.sub-task-cb[data-day="${targetDayKey}"]:checked`).length;
+
+                    let masterParentBox = document.getElementById(`master_cb_${parentId}`);
+                    if(masterParentBox) {
+                        if(siblingsCount > 0 && siblingCheckedCount === siblingsCount) {
+                            masterParentBox.checked = true;
+                        } else {
+                            masterParentBox.checked = false;
+                        }
+                    }
+
+                    updateGlobalStats();
+                });
+            });
+
+            updateGlobalStats();
+        }
+
+        function renderCleanRightPanelText(rawHtml) {
+            let view = document.getElementById("planDisplay");
+            if(!rawHtml) {
+                view.innerHTML = "No schedule active.";
+                return;
+            }
+            let sanitize = rawHtml.replace(/<input[^>]*>/gi, ""); 
+            sanitize = sanitize.replace(/\[Link:\s*([^\]]+)\]/gi, '<a href="$1" target="_blank" style="color: #0284c7; word-break: break-all;">$1</a>');
+            view.innerHTML = sanitize;
+        }
+
+       function initializeView() {
+            const rawPlanString = sessionStorage.getItem("activePlan") || localStorage.getItem("latestPlan");
+            if (!rawPlanString) {
+                console.log("No active study schedule running in this session.");
+                return;
+            }
+
+            let fetchedSubject = sessionStorage.getItem("activeSubject") || localStorage.getItem("latestPlanSubject") || "Current Study Plan";
+            document.getElementById("displaySubjectName").innerText = fetchedSubject;
+
+            const hoursMeta = sessionStorage.getItem("activeHours") || localStorage.getItem("latestPlanHours");
+            if(hoursMeta) {
+                hoursAllocatedPerDay = parseFloat(hoursMeta) || 0;
+                document.getElementById("hoursPerDayStat").innerText = hoursAllocatedPerDay + "h";
+            }
+
+            const styleMeta = sessionStorage.getItem("activeStyle") || localStorage.getItem("preferredStyle") || "Visual learning";
+            const topicsMeta = sessionStorage.getItem("activeTopics") || localStorage.getItem("customTopics") || "All Core Content";
+            const bufferMeta = (sessionStorage.getItem("activeBuffer") === "true" || localStorage.getItem("usesBufferDays") === "true") ? "Yes (Sundays Off)" : "No";
+
+            let simpleStyleName = "Visual";
+            if(styleMeta.includes("Active Recall")) simpleStyleName = "Active Recall";
+            if(styleMeta.includes("Textbook")) simpleStyleName = "Textbook";
+
+            document.getElementById("prefStyleLabel").innerText = simpleStyleName;
+            document.getElementById("prefTopicsLabel").innerText = topicsMeta.length > 22 ? topicsMeta.substring(0, 20) + "..." : topicsMeta;
+            document.getElementById("prefBufferLabel").innerText = bufferMeta;
+
+            parseScheduleToMemory(rawPlanString);
+            renderCleanRightPanelText(rawPlanString);
+            renderAccordionTracker();
+        }
+
+        function loadSavedPlansList() {
+            fetch("http://localhost:5000/planner")
+            .then(res => res.json())
+            .then(data => {
+                const plansList = document.getElementById("plansList");
+                plansList.innerHTML = ""; 
+                if(!data || data.length === 0) {
+                    plansList.innerHTML = "<p style='color:#888; font-size:12px;'>No plan history discovered in database.</p>";
+                    return;
+                }
+
+                data.forEach(plan => {
+                    const div = document.createElement("div");
+                    div.style.padding = "8px 0";
+                    div.innerHTML = `
+                        <p style="font-size: 13px; color: #444;">
+                            <strong>Subject:</strong> ${plan.subject} |
+                            <strong>Hours:</strong> ${plan.hours}h/day |
+                            <strong>Level:</strong> ${plan.difficulty} |
+                            <strong>Deadline:</strong> ${plan.examDate}
+                        </p>
+                        <hr style="border: 0; border-top: 1px dashed #eee; margin-top: 5px;">
+                    `;
+                    plansList.appendChild(div);
+                });
+            }).catch(e => {
+                document.getElementById("plansList").innerHTML = "<p style='color:#888; font-size:12px;'>Offline Mode active</p>";
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            initializeView();
+            loadSavedPlansList();
+        });
+        const btn = document.getElementById("audioSummaryBtn");
+
+        btn.addEventListener("click", () => {
+        if (!window.speechSynthesis) return;
+
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            btn.innerText = "🔊";
+            return;
+        }
+
+        let rawText = document.getElementById("planDisplay").textContent || "";
+        let speechText = rawText
+            .replace(/https?:\/\/\S+/gi, "")   // remove links
+            .replace(/\[Link:\s*[^\]]+\]/gi, "") // remove bracketed link markers
+            .replace(/(Resource|Link)/gi, "")    // remove extra link words
+            .trim();
+
+        if (!speechText) return;
+
+        const utterance = new SpeechSynthesisUtterance(speechText);
+        utterance.onend = () => {
+            btn.innerText = "🔊";
+        };
+
+        btn.innerText = "⏹";
+        window.speechSynthesis.speak(utterance);
+        });
+
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => console.log('Service Worker successfully registered!', reg.scope))
+        .catch((err) => console.error('Service Worker registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>
